@@ -43,15 +43,13 @@ passport.use(new GoogleStrategy({
   }
 ));
 passport.use('myprovider', new MyProviderStrategy({
-  clientID: '123456', 
-  clientSecret: 'afagawgahawgahaw', 
+  clientID: '', 
+  clientSecret: '', 
   callbackURL: 'http://localhost:3000/auth/myprovider/return',
-  authorizationURL: 'http://localhost:4000/auth/authorize',
-  tokenURL: 'http://localhost:4000/auth/b2c/token'
+  authorizationURL: '',
+  tokenURL: ''
   }, 
   function(accessToken, refreshToken, profile, done)  {
-    console.log(accessToken);
-    console.log(refreshToken);
     process.nextTick(function () {
       return done(null, profile);
     })
