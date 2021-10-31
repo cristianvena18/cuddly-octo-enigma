@@ -1,7 +1,8 @@
 var express = require('express')
   , passport = require('passport')
   , util = require('util')
-  , GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+  , GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
+  , MyProviderStrategy = require('passport-oauth2').Strategy;
 
 
 // Passport session setup.
@@ -41,11 +42,24 @@ passport.use(new GoogleStrategy({
     });
   }
 ));
-
-
-
+passport.use('myprovider', new MyProviderStrategy({
+  clientID: '123456', 
+  clientSecret: 'afagawgahawgahaw', 
+  callbackURL: 'http://localhost:3000/auth/myprovider/return',
+  authorizationURL: 'http://localhost:4000/auth/authorize',
+  tokenURL: 'http://localhost:4000/auth/b2c/token'
+  }, 
+  function(accessToken, refreshToken, profile, done)  {
+    console.log(accessToken);
+    console.log(refreshToken);
+    process.nextTick(function () {
+      return done(null, profile);
+    })
+  }));
 
 var app = express.createServer();
+
+console.log('Creating app');
 
 // configure Express
 app.configure(function() {
@@ -88,6 +102,12 @@ app.get('/auth/google',
     res.redirect('/');
   });
 
+app.get('/auth/myprovider', 
+  passport.authenticate('myprovider', {failureRedirect: '/login', scope: ['write:users', 'read:users']}), 
+  function(req, res) {
+  res.redirect('/')
+})
+
 // GET /auth/google/return
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
@@ -99,12 +119,20 @@ app.get('/auth/google/return',
     res.redirect('/');
   });
 
+app.get('/auth/myprovider/return', 
+  passport.authenticate('myprovider', { failureRedirect: '/login' }),
+  function(req, res) {
+    res.redirect('/');
+  });
+
 app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
 });
 
-app.listen(3000);
+app.listen(3000, () => {
+  console.log('App listening on port 3000');
+});
 
 
 // Simple route middleware to ensure user is authenticated.
